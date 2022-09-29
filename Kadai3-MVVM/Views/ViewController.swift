@@ -6,9 +6,12 @@
 //
 
 import UIKit
+import RxSwift
+import RxCocoa
+import RxRelay
 
 class ViewController: UIViewController {
-
+    // MARK: - UI Patrs
     @IBOutlet private weak var number1TextField: UITextField!
     @IBOutlet private weak var number2TextField: UITextField!
     @IBOutlet private weak var number1Switch: UISwitch!
@@ -18,10 +21,9 @@ class ViewController: UIViewController {
     @IBOutlet private weak var number2Label: UILabel!
     @IBOutlet private weak var calcResultLabel: UILabel!
 
-    private lazy var viewModel = ViewModel(number1TextFieldObservable: number1TextField.rx.text.map{$0 ?? ""}.asObservable(),
-                                           number2TextFieldObservable: number2TextField.rx.text.map{$0 ?? ""}.asObservable(),
-                                           number1IsOnSwitchObservable: number1Switch.rx.isOn.asObservable(),
-                                           number2IsOnSwitchObservable: number2Switch.rx.isOn.asObservable(), calcButtonTapObservable: calcButton.rx.tap.asObservable())
+    private lazy var viewModel = ViewModel(number1TextFieldObservable: number1TextField.rx.text.map{$0 ?? ""}.asObservable(), number2TextFieldObservable: number2TextField.rx.text.map{$0 ?? ""}.asObservable(), number1IsOnSwitchObservable: number1Switch.rx.isOn.asObservable(), number2IsOnSwitchObservable: number2Switch.rx.isOn.asObservable(), calcButtonTapObservable: calcButton.rx.tap.asObservable())
+
+    private let disposeBag = DisposeBag()
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -29,7 +31,7 @@ class ViewController: UIViewController {
     }
 
     private func setupBindings() {
-
+        viewModel.calcResultPublishSubject.bind(to: calcResultLabel.rx.text).disposed(by: disposeBag)
     }
 }
 
