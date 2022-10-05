@@ -21,13 +21,17 @@ protocol ViewModelInputs {
 
 // MARK: - Outputs
 protocol ViewModelOutputs {
-    var calcResultPublishSubject: PublishSubject <String> { get }
+    var number1PublishRelay: PublishRelay <String> { get }
+    var number2PublishRelay: PublishRelay <String> { get }
+    var calcResultPublishRelay: PublishRelay <String> { get }
 
 }
 class ViewModel: ViewModelInputs,ViewModelOutputs {
 
     // MARK: - Outputs
-    var calcResultPublishSubject = PublishSubject<String>()
+    var number1PublishRelay = PublishRelay <String> ()
+    var number2PublishRelay = PublishRelay <String> ()
+    var calcResultPublishRelay = PublishRelay<String>()
     
     // MARK: - Inputs
     var number1TextFieldObservable: Observable<String>
@@ -37,10 +41,13 @@ class ViewModel: ViewModelInputs,ViewModelOutputs {
     var calcButtonTapObservable: Observable<Void>
 
     // MARK: - property
-    private var number1 = ""
-    private var number2 = ""
+    private var number1 = 0
+    private var number2 = 0
     private var number1IsOnSwitch = false
     private var number2IsOnSwitch = false
+
+    // MARK: - Model Connect
+    private let calculator = Calculator()
 
     private let disposeBag = DisposeBag()
 
@@ -59,16 +66,31 @@ class ViewModel: ViewModelInputs,ViewModelOutputs {
     }
 
     private func setupBindings() {
-        number1TextFieldObservable.subscribe(onNext: { text in
-            self.number1 = text
-            print(self.number1)
-        })
-        .disposed(by: disposeBag)
+        // number1Switchがonの時はnumber1の符号を変える
+        number1IsOnSwitchObservable.subscribe { isSwitch in
+            self.number1 = isSwitch ? -self.number1: self.number1
+            self.number1PublishRelay.accept(String(self.number1))
+        }.disposed(by: disposeBag)
 
-        number2IsOnSwitchObservable.subscribe { isSwitchOn in
-            print(isSwitchOn)
-        }
-        .disposed(by: disposeBag)
+        // number2Switchがoffの時はnumber2の符号を変える
+        number2IsOnSwitchObservable.subscribe { isSwitch in
+            self.number2 = isSwitch ? -self.number2: self.number2
+            self.number2PublishRelay.accept(String(self.number2))
+        }.disposed(by: disposeBag)
+
+        let totalInput = Observable.combineLatest(number1TextFieldObservable, number2TextFieldObservable)
+
+        totalInput.subscribe { number1,number2 in
+            self.number1 = Int(number1) ?? 0
+            self.number2 = Int(number2) ?? 0
+        }.disposed(by: disposeBag)
+
+
+        // ボタンをタップした時の処理
+        calcButtonTapObservable.subscribe(onNext: {
+            self.calculator.addition(number1: self.number1, number2: self.number2)
+            self.calcResultPublishRelay.accept(String(self.calculator.calcResultNumber))
+        }).disposed(by: disposeBag)
     }
     
 }

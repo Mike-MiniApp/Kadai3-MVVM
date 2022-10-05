@@ -31,7 +31,9 @@ class ViewController: UIViewController {
     }
 
     private func setupBindings() {
-        viewModel.calcResultPublishSubject.bind(to: calcResultLabel.rx.text).disposed(by: disposeBag)
+        viewModel.calcResultPublishRelay.bind(to: calcResultLabel.rx.text).disposed(by: disposeBag)
+        viewModel.number1PublishRelay.bind(to: number1Label.rx.text).disposed(by: disposeBag)
+        viewModel.number2PublishRelay.bind(to: number2Label.rx.text).disposed(by: disposeBag)
     }
 }
 
