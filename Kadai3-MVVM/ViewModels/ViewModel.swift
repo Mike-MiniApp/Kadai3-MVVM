@@ -66,15 +66,15 @@ class ViewModel: ViewModelInputs,ViewModelOutputs {
     }
 
     private func setupBindings() {
-        // number1Switchがonの時はnumber1の符号を変える
+        // switchが切り替わるたびにnumber1の符号を変更する
         number1IsOnSwitchObservable.subscribe { isSwitch in
-            self.number1 = isSwitch ? -self.number1: self.number1
+            self.number1 = -self.number1
             self.number1PublishRelay.accept(String(self.number1))
         }.disposed(by: disposeBag)
 
-        // number2Switchがoffの時はnumber2の符号を変える
+        // switchが切り替わるたびにnumber2の符号を変更する
         number2IsOnSwitchObservable.subscribe { isSwitch in
-            self.number2 = isSwitch ? -self.number2: self.number2
+            self.number2 =  -self.number2
             self.number2PublishRelay.accept(String(self.number2))
         }.disposed(by: disposeBag)
 
@@ -82,9 +82,10 @@ class ViewModel: ViewModelInputs,ViewModelOutputs {
 
         totalInput.subscribe { number1,number2 in
             self.number1 = Int(number1) ?? 0
+            self.number1PublishRelay.accept(String(self.number1))
             self.number2 = Int(number2) ?? 0
+            self.number2PublishRelay.accept(String(self.number2))
         }.disposed(by: disposeBag)
-
 
         // ボタンをタップした時の処理
         calcButtonTapObservable.subscribe(onNext: {
